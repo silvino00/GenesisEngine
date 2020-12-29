@@ -4,12 +4,23 @@
 #include "Globals.h"
 #include "Resource.h"
 
+enum class ShaderType {
+	vertexSHADER,
+	fragmentSHADER,
+	noSHADER,
+};
+
 class ResourceShader : public Resource {
 
 public:
 
 	ResourceShader(uint UID);
 	~ResourceShader();
+
+public:
+
+	int vertexShader;
+	int fragmentShader;
 
 };
 

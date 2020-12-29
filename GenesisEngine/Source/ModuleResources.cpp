@@ -12,6 +12,7 @@
 #include "ResourceMesh.h"
 #include "ResourceMaterial.h"
 #include "ResourceTexture.h"
+#include "ResourceShader.h"
 
 #include "WindowImport.h"
 #include "WindowAssets.h"
@@ -34,6 +35,7 @@ bool ModuleResources::Init()
 
 	MeshImporter::Init();
 	TextureImporter::Init();
+	//ShaderImporter::Init();
 
 	//std::vector<std::string> files;
 	//std::vector<std::string> dirs;
@@ -72,6 +74,7 @@ void ModuleResources::OnEditor()
 	std::vector<Resource*> meshes;
 	std::vector<Resource*> materials;
 	std::vector<Resource*> textures;
+	std::vector<Resource*> shaders;
 
 	std::map<uint, Resource*>::iterator it = resources.begin();
 	for (it; it != resources.end(); it++)
@@ -87,6 +90,8 @@ void ModuleResources::OnEditor()
 		case ResourceType::RESOURCE_TEXTURE:
 			textures.push_back(it->second);
 			break;
+		case ResourceType::RESOURCE_SHADER:
+			shaders.push_back(it->second);
 		default:
 			break;
 		}
@@ -131,6 +136,21 @@ void ModuleResources::OnEditor()
 			ImGui::Text("Assets path: %s", textures[i]->assetsFile.c_str());
 			ImGui::Text("Library path: %s", textures[i]->libraryFile.c_str());
 			ImGui::Text("Reference count: %d", textures[i]->referenceCount);
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+		}
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNode("Shaders")) {
+		for (size_t i = 0; i < shaders.size(); i++)
+		{
+			ImGui::Text("Name: %s", shaders[i]->name.c_str());
+			ImGui::Text("UID: %d", shaders[i]->GetUID());
+			ImGui::Text("Assets path: %s", shaders[i]->assetsFile.c_str());
+			ImGui::Text("Library path: %s", shaders[i]->libraryFile.c_str());
+			ImGui::Text("Reference count: %d", shaders[i]->referenceCount);
 			ImGui::Spacing();
 			ImGui::Separator();
 			ImGui::Spacing();
@@ -326,6 +346,9 @@ uint ModuleResources::ImportFile(const char* assets_file)
 		library_path.append(FileSystem::GetFile(assets_file));
 		FileSystem::DuplicateFile(assets_file, library_path.c_str());
 		library_path.clear();
+		break;
+	case RESOURCE_SHADER:
+		ShaderImporter::CreateandCompile(fileBuffer, (ResourceShader*)resource, assets_file);
 		break;
 	default: 
 		LOG_WARNING("Trying to import unknown file: %s", assets_file);
@@ -561,6 +584,8 @@ Resource* ModuleResources::LoadResource(uint UID, ResourceType type)
 			break;
 		case RESOURCE_SCENE:
 			break;
+		case RESOURCE_SHADER:
+			break;
 		case RESOURCE_UNKNOWN:
 			break;
 		default:
@@ -597,6 +622,8 @@ void ModuleResources::UnloadResource(Resource* resource)
 	case ResourceType::RESOURCE_TEXTURE:
 		TextureImporter::UnloadTexture(((ResourceTexture*)resource)->GetID());
 		break;
+	case ResourceType::RESOURCE_SHADER:
+		break;
 	default:
 		break;
 	}
@@ -629,6 +656,9 @@ Resource* ModuleResources::CreateResource(const char* assetsPath, ResourceType t
 		resource = new ResourceTexture(UID);
 		break;
 	case RESOURCE_SCENE:
+		break;
+	case RESOURCE_SHADER:
+		resource = new ResourceShader(UID);
 		break;
 	case RESOURCE_UNKNOWN:
 		break;
@@ -671,6 +701,9 @@ Resource* ModuleResources::CreateResource(uint UID, ResourceType type, std::stri
 		resource = new ResourceTexture(UID);
 		break;
 	case RESOURCE_SCENE:
+		break;
+	case RESOURCE_SHADER:
+		resource = new ResourceShader(UID);
 		break;
 	case RESOURCE_UNKNOWN:
 		break;
@@ -782,6 +815,9 @@ bool ModuleResources::SaveResource(Resource* resource)
 		break;
 	case RESOURCE_SCENE:
 		break;
+	case RESOURCE_SHADER:
+		//size = ShaderImporter::Save((ResourceTexture*)resource, &buffer);
+		break;
 	default:
 		break;
 	}
@@ -854,6 +890,9 @@ ResourceType ModuleResources::GetTypeFromPath(const char* path)
 	else if (extension == ".scene")
 		return ResourceType::RESOURCE_SCENE;
 
+	else if (extension == ".vert" || extension == ".frag")
+		return ResourceType::RESOURCE_SHADER;
+
 	else 
 		return ResourceType::RESOURCE_UNKNOWN;
 }
@@ -879,6 +918,8 @@ const char* ModuleResources::GenerateLibraryPath(Resource* resource)
 		sprintf_s(library_path, 128, "Library/Textures/%d.dds", resource->GetUID()); break;
 	case RESOURCE_SCENE:
 		sprintf_s(library_path, 128, "Library/Scenes/%d.scene", resource->GetUID()); break;
+	case RESOURCE_SHADER:
+		sprintf_s(library_path, 128, "Library/Scenes/%d.shader", resource->GetUID()); break;
 	default:
 		break;
 	}
@@ -911,6 +952,10 @@ std::string ModuleResources::GenerateLibraryPath(uint uid, ResourceType type)
 		path = "Library/Scenes/";
 		path.append(std::to_string(uid) + ".scene");
 		break;
+	case RESOURCE_SHADER:
+		path = "Library/Shaders/";
+		path.append(std::to_string(uid) + ".shader");
+		break;
 	case RESOURCE_UNKNOWN:
 		LOG("Error trying to generate a path for an unknown file %d", uid);
 		break;
@@ -932,6 +977,7 @@ std::string ModuleResources::GetLibraryFolder(const char* file_in_assets)
 	case RESOURCE_MATERIAL: return std::string("Library/Materials/"); break;
 	case RESOURCE_TEXTURE: return std::string("Library/Textures/");	break;
 	case RESOURCE_SCENE: return std::string("Library/Scenes/");	break;
+	case RESOURCE_SHADER: return std::string("Library/Shaders/");	break;
 	default: break;
 	}
 }
@@ -952,6 +998,8 @@ std::string ModuleResources::GenerateAssetsPath(const char* path)
 		assets_path = "Assets/Textures/"; break;
 	case RESOURCE_SCENE:
 		assets_path = "Assets/Scenes/"; break;
+	case RESOURCE_SHADER:
+		assets_path = "Assets/Shaders/"; break;
 	default:
 		break;
 	}
@@ -977,6 +1025,7 @@ void ModuleResources::AddFileExtension(std::string& file, ResourceType type)
 	case RESOURCE_MATERIAL: file += ".material"; break;
 	case RESOURCE_TEXTURE: file += ".dds"; break;
 	case RESOURCE_SCENE:  file += ".scene";	break;
+	case RESOURCE_SHADER:  file += ".shader";	break;
 	default: break;
 	}
 }

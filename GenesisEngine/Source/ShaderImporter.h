@@ -3,13 +3,14 @@
 #include "Globals.h"
 
 class ResourceShader;
+enum class ShaderType;
 
 #include <string>
 
 namespace ShaderImporter
 {
-	void CreateandCompile(char* fileBuffer, ResourceShader* shader, const char* assets_path);
-	void ShaderProgram(ResourceShader* shader);
+	void CreateandCompile(char* fileBuffer, ResourceShader* shader, const char* path);
+	void ShaderProgram(ResourceShader* shaderm, const char* path, ShaderType type);
 }
 
 #endif
