@@ -57,6 +57,7 @@ void FileSystem::CreateLibraryDirectories()
 	CreateDir("Assets/Textures/");
 	CreateDir("Assets/Models/");
 	CreateDir("Assets/Scenes/");
+	CreateDir("Assets/Shaders/");
 
 	CreateDir("Library/Config/");
 	CreateDir("Library/Models/");
@@ -64,6 +65,7 @@ void FileSystem::CreateLibraryDirectories()
 	CreateDir("Library/Materials/");
 	CreateDir("Library/Textures/");
 	CreateDir("Library/Scenes/");
+	CreateDir("Library/Shaders/");
 	//CreateDir("Materials/");
 	//CreateDir(ANIMATIONS_PATH);
 	//CreateDir(PARTICLES_PATH);
