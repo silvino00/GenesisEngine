@@ -15,6 +15,8 @@ This last assignement consisted on creating a Shader Pipeline that would render 
 
 So, to achive the goal of rendering the whole geometry using only shaders we started by drawing everything in red using one vertex shader and one fragment shader. Both types of shaders were imported to the engine to achive that. After that, we had to draw all the geometry of the city with their own color, so we added normals to the code and we changed the vert and frag file to make it render using only shaders.
 
+<dt><img src="https://raw.githubusercontent.com/silvino00/GenesisEngine/master/docs/gif1.gif"></dt>
+
 <h4> Water Simulation </h4>
 
 For the water simulation we created a fragment shader and a vertex shader. 
