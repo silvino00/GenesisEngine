@@ -7,10 +7,11 @@
 class GnMesh;
 class ResourceMaterial;
 class ResourceTexture;
+class ResourceShader;
 class GnJSONArray;
 
 class Material : public Component {
-public: 
+public:
 	Material();
 	Material(GameObject* gameObject);
 	~Material();
@@ -25,6 +26,11 @@ public:
 	void SetTexture(ResourceTexture* texture);
 	void AssignCheckersImage();
 	ResourceTexture* GetDiffuseTexture();
+
+	void AddShader();
+
+public:
+	ResourceShader* shader;
 
 private:
 	bool checkers_image;

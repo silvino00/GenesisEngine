@@ -20,11 +20,12 @@
 
 #include "MathGeoLib/include/MathGeoLib.h"
 
-ModuleResources::ModuleResources(bool start_enabled) : Module(start_enabled), _toDeleteAsset(-1), _toDeleteResource(-1), cleanLibrary(false), cleanMetas(false)
+ModuleResources::ModuleResources(bool start_enabled) : Module(start_enabled), _toDeleteResource(0u), cleanLibrary(false), cleanMetas(false)
 {
 	name = "resources";
 	modelImportingOptions = ModelImportingOptions();
 	textureImportingOptions = TextureImportingOptions();
+	_toDeleteAsset.clear();
 }
 
 ModuleResources::~ModuleResources() {}
@@ -35,15 +36,20 @@ bool ModuleResources::Init()
 
 	MeshImporter::Init();
 	TextureImporter::Init();
-	//ShaderImporter::Init();
+	//App->renderer3D->Init();
 
 	//std::vector<std::string> files;
 	//std::vector<std::string> dirs;
 	//FileSystem::DiscoverFilesRecursive("Library", files, dirs);
 
+	return ret;
+}
+
+bool ModuleResources::Start()
+{
 	CheckAssetsRecursive("Assets");
 
-	return ret;
+	return true;
 }
 
 bool ModuleResources::CleanUp()
@@ -52,7 +58,7 @@ bool ModuleResources::CleanUp()
 	std::map<uint, Resource*>::iterator it = resources.begin();
 
 	/*
-	for (it; it != resources.end(); ++it) 
+	for (it; it != resources.end(); ++it)
 	{
 		ReleaseResource(it->second->GetUID());
 	}
@@ -74,7 +80,6 @@ void ModuleResources::OnEditor()
 	std::vector<Resource*> meshes;
 	std::vector<Resource*> materials;
 	std::vector<Resource*> textures;
-	std::vector<Resource*> shaders;
 
 	std::map<uint, Resource*>::iterator it = resources.begin();
 	for (it; it != resources.end(); it++)
@@ -90,14 +95,12 @@ void ModuleResources::OnEditor()
 		case ResourceType::RESOURCE_TEXTURE:
 			textures.push_back(it->second);
 			break;
-		case ResourceType::RESOURCE_SHADER:
-			shaders.push_back(it->second);
 		default:
 			break;
 		}
 	}
 
-	if(ImGui::TreeNode("Meshes")) {
+	if (ImGui::TreeNode("Meshes")) {
 		ImGui::Separator();
 		for (size_t i = 0; i < meshes.size(); i++)
 		{
@@ -142,21 +145,6 @@ void ModuleResources::OnEditor()
 		}
 		ImGui::TreePop();
 	}
-
-	if (ImGui::TreeNode("Shaders")) {
-		for (size_t i = 0; i < shaders.size(); i++)
-		{
-			ImGui::Text("Name: %s", shaders[i]->name.c_str());
-			ImGui::Text("UID: %d", shaders[i]->GetUID());
-			ImGui::Text("Assets path: %s", shaders[i]->assetsFile.c_str());
-			ImGui::Text("Library path: %s", shaders[i]->libraryFile.c_str());
-			ImGui::Text("Reference count: %d", shaders[i]->referenceCount);
-			ImGui::Spacing();
-			ImGui::Separator();
-			ImGui::Spacing();
-		}
-		ImGui::TreePop();
-	}
 }
 
 void ModuleResources::LoadEngineAssets(AssetsIcons& icons)
@@ -167,18 +155,16 @@ void ModuleResources::LoadEngineAssets(AssetsIcons& icons)
 
 void ModuleResources::OnFrameEnd()
 {
-	if(_toDeleteResource != -1)
+	if (_toDeleteResource != 0u)
 	{
 		DeleteResource(_toDeleteResource);
-		_toDeleteResource = -1;
+		_toDeleteResource = 0u;
 	}
 
-	if (_toDeleteAsset != -1)
+	if (_toDeleteAsset.size() > 0)
 	{
-		std::string assets_path = resources_data[_toDeleteAsset].assetsFile;
-		DeleteResource(_toDeleteAsset);
-		DeleteAsset(assets_path.c_str());
-		_toDeleteAsset = -1;
+		DeleteAsset(_toDeleteAsset.c_str());
+		_toDeleteAsset.clear();
 	}
 }
 
@@ -202,12 +188,12 @@ bool ModuleResources::MetaUpToDate(const char* assets_file, const char* meta_fil
 			library_path = Find(UID);
 
 		//check for the file itself to exist
-		if (!FileSystem::Exists(library_path.c_str())) 
+		if (!FileSystem::Exists(library_path.c_str()))
 		{
 			ret = false;
 		}
 		//check its internal resources
-		else if (GetTypeFromPath(assets_file) == ResourceType::RESOURCE_MODEL) 
+		else if (GetTypeFromPath(assets_file) == ResourceType::RESOURCE_MODEL)
 		{
 			ret = ModelImporter::InternalResourcesExist(meta_file);
 		}
@@ -229,6 +215,9 @@ bool ModuleResources::MetaUpToDate(const char* assets_file, const char* meta_fil
 
 int ModuleResources::GetUIDFromMeta(const char* meta_file)
 {
+	if (!FileSystem::Exists(meta_file))
+		return 0;
+
 	char* buffer = nullptr;
 	uint size = FileSystem::Load(meta_file, &buffer);
 	GnJSONObj meta(buffer);
@@ -265,7 +254,7 @@ int ModuleResources::Find(const char* assets_file)
 
 const char* ModuleResources::Find(uint UID)
 {
-	if (resources_data.find(UID) != resources_data.end() && resources_data[UID].libraryFile.size() > 0) 
+	if (resources_data.find(UID) != resources_data.end() && resources_data[UID].libraryFile.size() > 0)
 		return resources_data[UID].libraryFile.c_str();
 
 	std::vector<std::string> directories = { "Library/Config/","Library/Models/","Library/Meshes/","Library/Materials/","Library/Textures/", "Library/Scenes/" };
@@ -326,38 +315,45 @@ uint ModuleResources::ImportFile(const char* assets_file)
 {
 	ResourceType type = GetTypeFromPath(assets_file);
 
+	//ignore fragment shaders, when importing vertex shaders they will be compiled too
+	std::string path(assets_file);
+	if (path.find(".frag") != std::string::npos)
+		return 0;
+
 	Resource* resource = CreateResource(assets_file, type);
 	uint ret = 0;
-	
+
 	char* fileBuffer;
+
 	uint size = FileSystem::Load(assets_file, &fileBuffer);
+
 	std::string library_path;
 
 	switch (type)
 	{
-	case RESOURCE_MODEL: 
-		ModelImporter::Import(fileBuffer, (ResourceModel*)resource, size); 
+	case RESOURCE_MODEL:
+		ModelImporter::Import(fileBuffer, (ResourceModel*)resource, size);
 		break;
 	case RESOURCE_TEXTURE:
 		TextureImporter::Import(fileBuffer, (ResourceTexture*)resource, size);
 		break;
-	case RESOURCE_SCENE: 
+	case RESOURCE_SHADER:
+		ShaderImporter::CreateandCompile(fileBuffer, (ResourceShader*)resource, assets_file);
+		break;
+	case RESOURCE_SCENE:
 		library_path = "Library/Scenes/";
 		library_path.append(FileSystem::GetFile(assets_file));
 		FileSystem::DuplicateFile(assets_file, library_path.c_str());
 		library_path.clear();
 		break;
-	case RESOURCE_SHADER:
-		ShaderImporter::CreateandCompile(fileBuffer, (ResourceShader*)resource, assets_file);
-		break;
-	default: 
+	default:
 		LOG_WARNING("Trying to import unknown file: %s", assets_file);
 		break;
 	}
 
-	if (resource == nullptr) 
+	if (resource == nullptr)
 	{
-		if(type != ResourceType::RESOURCE_SCENE)
+		if (type != ResourceType::RESOURCE_SCENE)
 			LOG_ERROR("Fatal error when importing file: %s", assets_file);
 
 		return 0;
@@ -365,8 +361,10 @@ uint ModuleResources::ImportFile(const char* assets_file)
 
 	SaveResource(resource);
 	ret = resource->GetUID();
-	ReleaseResource(ret);
 	RELEASE_ARRAY(fileBuffer);
+
+	if (type != ResourceType::RESOURCE_SHADER)
+		ReleaseResource(ret);
 
 	return ret;
 }
@@ -387,7 +385,7 @@ uint ModuleResources::ImportInternalResource(const char* path, const void* data,
 	default:
 		break;
 	}
-		
+
 	SaveResource(resource);
 	ret = resource->GetUID();
 	ReleaseResource(ret);
@@ -430,7 +428,7 @@ uint ModuleResources::ReimportFile(const char* assets_file)
 		break;
 	}
 
-	if (resource == nullptr) 
+	if (resource == nullptr)
 	{
 		LOG_ERROR("Fatal error when reimporting file: %s", assets_file);
 		return 0;
@@ -466,7 +464,8 @@ void ModuleResources::AddAssetToDelete(const char* asset_path)
 {
 	std::string meta_file = asset_path;
 	meta_file.append(".meta");
-	_toDeleteAsset = GetUIDFromMeta(meta_file.c_str());
+	_toDeleteResource = GetUIDFromMeta(meta_file.c_str());
+	_toDeleteAsset = asset_path;
 	App->AddModuleToTaskStack(this);
 }
 
@@ -485,7 +484,7 @@ bool ModuleResources::DeleteAsset(const char* assets_path)
 	std::string meta_file = assets_path;
 	meta_file.append(".meta");
 
-	if(FileSystem::Exists(meta_file.c_str()))
+	if (FileSystem::Exists(meta_file.c_str()))
 		FileSystem::Delete(meta_file.c_str());
 
 	return ret;
@@ -524,12 +523,12 @@ bool ModuleResources::DeleteInternalResources(uint UID)
 		std::vector<uint> materials;
 		ModelImporter::ExtractInternalResources(resources_data[UID].libraryFile.c_str(), meshes, materials);
 
-		for (size_t i = 0; i < meshes.size(); i++) 
+		for (size_t i = 0; i < meshes.size(); i++)
 		{
 			DeleteInternalResource(meshes[i]);
 		}
 
-		for (size_t i = 0; i < materials.size(); i++) 
+		for (size_t i = 0; i < materials.size(); i++)
 		{
 			DeleteInternalResource(materials[i]);
 		}
@@ -565,7 +564,7 @@ Resource* ModuleResources::LoadResource(uint UID, ResourceType type)
 		switch (resource->GetType())
 		{
 		case RESOURCE_MODEL:
-			if(ModelImporter::InternalResourcesExist(resource->libraryFile.c_str()))
+			if (ModelImporter::InternalResourcesExist(resource->libraryFile.c_str()))
 				ret = ModelImporter::Load(buffer, (ResourceModel*)resource, size);
 			else {
 				ReimportFile(resources_data[UID].assetsFile.c_str());
@@ -584,8 +583,6 @@ Resource* ModuleResources::LoadResource(uint UID, ResourceType type)
 			break;
 		case RESOURCE_SCENE:
 			break;
-		case RESOURCE_SHADER:
-			break;
 		case RESOURCE_UNKNOWN:
 			break;
 		default:
@@ -594,8 +591,8 @@ Resource* ModuleResources::LoadResource(uint UID, ResourceType type)
 	}
 	else
 		ret = false;
-	
-	if(ret == false)
+
+	if (ret == false)
 	{
 		LOG_ERROR("Resource: %d could not be loaded");
 		ReleaseResource(UID);
@@ -622,24 +619,27 @@ void ModuleResources::UnloadResource(Resource* resource)
 	case ResourceType::RESOURCE_TEXTURE:
 		TextureImporter::UnloadTexture(((ResourceTexture*)resource)->GetID());
 		break;
-	case ResourceType::RESOURCE_SHADER:
-		break;
 	default:
 		break;
 	}
 
 	resources.erase(resources.find(resource->GetUID()));
 
-	delete resource;
-	resource = nullptr;
+	if (resource->GetType() != ResourceType::RESOURCE_SHADER)
+	{
+		delete resource;
+		resource = nullptr;
+	}
 }
 
 Resource* ModuleResources::CreateResource(const char* assetsPath, ResourceType type, uint UID)
 {
 	Resource* resource = nullptr;
 
-	if(UID == 0)
+	if (UID == 0)
 		UID = GenerateUID();
+
+	std::string extension = FileSystem::GetFileFormat(assetsPath);
 
 	switch (type)
 	{
@@ -655,10 +655,10 @@ Resource* ModuleResources::CreateResource(const char* assetsPath, ResourceType t
 	case RESOURCE_TEXTURE:
 		resource = new ResourceTexture(UID);
 		break;
-	case RESOURCE_SCENE:
-		break;
 	case RESOURCE_SHADER:
 		resource = new ResourceShader(UID);
+		break;
+	case RESOURCE_SCENE:
 		break;
 	case RESOURCE_UNKNOWN:
 		break;
@@ -702,9 +702,6 @@ Resource* ModuleResources::CreateResource(uint UID, ResourceType type, std::stri
 		break;
 	case RESOURCE_SCENE:
 		break;
-	case RESOURCE_SHADER:
-		resource = new ResourceShader(UID);
-		break;
 	case RESOURCE_UNKNOWN:
 		break;
 	default:
@@ -743,7 +740,7 @@ Resource* ModuleResources::RequestResource(uint UID)
 
 	ResourceType type = GetTypeFromPath(library_file);
 	Resource* resource = LoadResource(UID, type);
-	
+
 	if (resource != nullptr)
 		resource->referenceCount++;
 
@@ -754,7 +751,7 @@ ResourceData ModuleResources::RequestResourceData(uint UID)
 {
 	std::map<uint, ResourceData>::iterator it = resources_data.find(UID);
 
-	if (it != resources_data.end()) 
+	if (it != resources_data.end())
 		return it->second;
 }
 
@@ -767,8 +764,8 @@ GameObject* ModuleResources::RequestGameObject(const char* assets_file)
 	meta_file.append(".meta");
 	ResourceModel* model = (ResourceModel*)RequestResource(GetUIDFromMeta(meta_file.c_str()));
 
-	if (model == nullptr) 
-	{	
+	if (model == nullptr)
+	{
 		model = (ResourceModel*)RequestResource(ReimportFile(assets_file));
 	}
 
@@ -815,20 +812,17 @@ bool ModuleResources::SaveResource(Resource* resource)
 		break;
 	case RESOURCE_SCENE:
 		break;
-	case RESOURCE_SHADER:
-		//size = ShaderImporter::Save((ResourceTexture*)resource, &buffer);
-		break;
 	default:
 		break;
 	}
 
-	if (size > 0) 
+	if (size > 0)
 	{
 		FileSystem::Save(resource->libraryFile.c_str(), buffer, size);
 		RELEASE_ARRAY(buffer);
 	}
 
-	if(resource->GetType() == ResourceType::RESOURCE_MODEL || resource->GetType() == ResourceType::RESOURCE_TEXTURE)
+	if (resource->GetType() == ResourceType::RESOURCE_MODEL || resource->GetType() == ResourceType::RESOURCE_TEXTURE)
 		ret = SaveMetaFile(resource);
 
 	return ret;
@@ -874,7 +868,7 @@ bool ModuleResources::LoadMetaFile(Resource* resource)
 ResourceType ModuleResources::GetTypeFromPath(const char* path)
 {
 	std::string extension = FileSystem::GetFileFormat(path);
-	
+
 	if (extension == ".fbx" || extension == ".model")
 		return ResourceType::RESOURCE_MODEL;
 
@@ -887,13 +881,13 @@ ResourceType ModuleResources::GetTypeFromPath(const char* path)
 	else if (extension == ".png" || extension == ".tga" || extension == ".dds")
 		return ResourceType::RESOURCE_TEXTURE;
 
-	else if (extension == ".scene")
-		return ResourceType::RESOURCE_SCENE;
-
 	else if (extension == ".vert" || extension == ".frag")
 		return ResourceType::RESOURCE_SHADER;
 
-	else 
+	else if (extension == ".scene")
+		return ResourceType::RESOURCE_SCENE;
+
+	else
 		return ResourceType::RESOURCE_UNKNOWN;
 }
 
@@ -918,8 +912,6 @@ const char* ModuleResources::GenerateLibraryPath(Resource* resource)
 		sprintf_s(library_path, 128, "Library/Textures/%d.dds", resource->GetUID()); break;
 	case RESOURCE_SCENE:
 		sprintf_s(library_path, 128, "Library/Scenes/%d.scene", resource->GetUID()); break;
-	case RESOURCE_SHADER:
-		sprintf_s(library_path, 128, "Library/Scenes/%d.shader", resource->GetUID()); break;
 	default:
 		break;
 	}
@@ -952,10 +944,6 @@ std::string ModuleResources::GenerateLibraryPath(uint uid, ResourceType type)
 		path = "Library/Scenes/";
 		path.append(std::to_string(uid) + ".scene");
 		break;
-	case RESOURCE_SHADER:
-		path = "Library/Shaders/";
-		path.append(std::to_string(uid) + ".shader");
-		break;
 	case RESOURCE_UNKNOWN:
 		LOG("Error trying to generate a path for an unknown file %d", uid);
 		break;
@@ -977,7 +965,6 @@ std::string ModuleResources::GetLibraryFolder(const char* file_in_assets)
 	case RESOURCE_MATERIAL: return std::string("Library/Materials/"); break;
 	case RESOURCE_TEXTURE: return std::string("Library/Textures/");	break;
 	case RESOURCE_SCENE: return std::string("Library/Scenes/");	break;
-	case RESOURCE_SHADER: return std::string("Library/Shaders/");	break;
 	default: break;
 	}
 }
@@ -998,8 +985,6 @@ std::string ModuleResources::GenerateAssetsPath(const char* path)
 		assets_path = "Assets/Textures/"; break;
 	case RESOURCE_SCENE:
 		assets_path = "Assets/Scenes/"; break;
-	case RESOURCE_SHADER:
-		assets_path = "Assets/Shaders/"; break;
 	default:
 		break;
 	}
@@ -1025,7 +1010,6 @@ void ModuleResources::AddFileExtension(std::string& file, ResourceType type)
 	case RESOURCE_MATERIAL: file += ".material"; break;
 	case RESOURCE_TEXTURE: file += ".dds"; break;
 	case RESOURCE_SCENE:  file += ".scene";	break;
-	case RESOURCE_SHADER:  file += ".shader";	break;
 	default: break;
 	}
 }
@@ -1059,14 +1043,14 @@ void ModuleResources::CheckAssetsRecursive(const char* directory)
 		std::string meta = file;
 		meta.append(".meta");
 
-		if(FileSystem::Exists(meta.c_str()))
+		if (FileSystem::Exists(meta.c_str()))
 		{
 			if (!MetaUpToDate(file.c_str(), meta.c_str()))
 			{
 				ReimportFile(file.c_str());
 			}
 		}
-		else 
+		else
 		{
 			ImportFile(file.c_str());
 		}
@@ -1083,7 +1067,7 @@ void ModuleResources::CleanLibrary()
 	for (size_t i = 0; i < files.size(); i++)
 	{
 		//avoid deleting config files
-		if(files[i].find("Config") == std::string::npos)
+		if (files[i].find("Config") == std::string::npos)
 			FileSystem::Delete(files[i].c_str());
 	}
 
@@ -1102,7 +1086,7 @@ void ModuleResources::CleanLibrary()
 			}
 		}
 	}
-	
+
 	folders.clear();
 	files.clear();
 }

@@ -6,11 +6,12 @@
 #include "GameObject.h"
 #include "Application.h"
 #include "ResourceTexture.h"
+#include "ResourceShader.h"
 #include "glew/include/glew.h"
 #include "ResourceMaterial.h"
 #include "WindowAssets.h"
 
-Material::Material() : Component(), checkers_image(false), _resource(nullptr), colored(false)
+Material::Material() : Component(), checkers_image(false), _resource(nullptr), colored(false), shader(nullptr)
 {
 	type = ComponentType::MATERIAL;
 
@@ -25,6 +26,8 @@ Material::Material() : Component(), checkers_image(false), _resource(nullptr), c
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	shader = dynamic_cast<ResourceShader*>(App->resources->RequestResource(App->resources->Find("Assets/Shaders/default_shader.vert")));
 }
 
 Material::Material(GameObject* gameObject) : Component(gameObject), checkers_image(false), _resource(nullptr), _diffuseTexture(nullptr)
@@ -86,7 +89,7 @@ void Material::SetResourceUID(uint UID)
 
 void Material::BindTexture()
 {
-	if (!App->resources->Exists(_resourceUID)) 
+	if (!App->resources->Exists(_resourceUID))
 	{
 		_resource = nullptr;
 		_resourceUID = 0u;
@@ -95,7 +98,9 @@ void Material::BindTexture()
 	else if (!checkers_image)
 	{
 		if (_diffuseTexture != nullptr && App->resources->Exists(_resource->diffuseTextureUID))
+		{
 			_diffuseTexture->BindTexture();
+		}
 		else
 			AssignCheckersImage();
 	}
@@ -125,7 +130,7 @@ void Material::Load(GnJSONObj& load_object)
 
 	int textureUID = load_object.GetInt("Texture UID", -1);
 
-	if (_resource != nullptr && textureUID != -1) 
+	if (_resource != nullptr && textureUID != -1)
 	{
 		_resource->diffuseTextureUID = textureUID;
 		_diffuseTexture = (ResourceTexture*)App->resources->RequestResource(textureUID);
@@ -159,7 +164,7 @@ void Material::OnEditor()
 
 		ImGui::Separator();
 
-		if(_diffuseTexture != nullptr && checkers_image == false)
+		if (_diffuseTexture != nullptr && checkers_image == false)
 		{
 			ImGui::Text("Texture: %s", _diffuseTexture->assetsFile.c_str());
 			ImGui::Text("Width: %d Height: %d", _diffuseTexture->GeWidth(), _diffuseTexture->GetHeight());
@@ -182,7 +187,7 @@ void Material::OnEditor()
 				}
 				ImGui::EndDragDropTarget();
 			}
-				
+
 			ImGui::SameLine();
 			if (ImGui::Button("Remove Texture"))
 			{
@@ -256,4 +261,9 @@ void Material::AssignCheckersImage()
 ResourceTexture* Material::GetDiffuseTexture()
 {
 	return _diffuseTexture;
+}
+
+void Material::AddShader()
+{
+	shader->CompileUseProgram();
 }

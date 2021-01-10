@@ -4,24 +4,25 @@
 #include "Globals.h"
 #include "Resource.h"
 
-enum class ShaderType {
+enum class ShaderType
+{
 	vertexSHADER,
 	fragmentSHADER,
-	noSHADER,
+	noSHADER
 };
 
 class ResourceShader : public Resource {
-
 public:
-
 	ResourceShader(uint UID);
 	~ResourceShader();
 
-public:
+	void CompileUseProgram();
+	void SetMat4(const char* name, float* matrix);
 
+public:
 	int vertexShader;
 	int fragmentShader;
-
+	int shaderProgram;
 };
 
-#endif 
+#endif

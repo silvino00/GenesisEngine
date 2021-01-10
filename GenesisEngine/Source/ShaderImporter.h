@@ -5,12 +5,16 @@
 class ResourceShader;
 enum class ShaderType;
 
+typedef unsigned int GLuint;
 #include <string>
 
 namespace ShaderImporter
 {
 	void CreateandCompile(char* fileBuffer, ResourceShader* shader, const char* path);
-	void ShaderProgram(ResourceShader* shaderm, const char* path, ShaderType type);
+	GLuint VertexCompilation(char* ShaderSource);
+	GLuint FragmentCompilation(char* ShaderSource);
+
+	void ShaderProgram(ResourceShader* shaderm);
 }
 
 #endif

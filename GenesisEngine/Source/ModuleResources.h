@@ -18,13 +18,14 @@ struct ResourceData
 	ResourceType type = ResourceType::RESOURCE_UNKNOWN;
 };
 
-class ModuleResources : public Module 
+class ModuleResources : public Module
 {
 public:
 	ModuleResources(bool start_enabled = true);
 	~ModuleResources();
 
 	bool Init() override;
+	bool Start() override;
 	bool CleanUp() override;
 	void OnEditor();
 	void LoadEngineAssets(AssetsIcons& icons);
@@ -85,6 +86,6 @@ public:
 private:
 	std::map<uint, Resource*> resources;
 	std::map<uint, ResourceData> resources_data;
-	int _toDeleteAsset;
-	int _toDeleteResource;
+	std::string _toDeleteAsset;
+	uint _toDeleteResource;
 };
