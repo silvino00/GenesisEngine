@@ -10,6 +10,8 @@
 #include "glew/include/glew.h"
 #include "ResourceMaterial.h"
 #include "WindowAssets.h"
+#include "Time.h"
+#include "Transform.h"
 
 Material::Material() : Component(), checkers_image(false), _resource(nullptr), colored(false), shader(nullptr)
 {
@@ -27,7 +29,7 @@ Material::Material() : Component(), checkers_image(false), _resource(nullptr), c
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	shader = dynamic_cast<ResourceShader*>(App->resources->RequestResource(App->resources->Find("Assets/Shaders/default_shader.vert")));
+	//shader = dynamic_cast<ResourceShader*>(App->resources->RequestResource(App->resources->Find("Assets/Shaders/default_shader.vert")));
 }
 
 Material::Material(GameObject* gameObject) : Component(gameObject), checkers_image(false), _resource(nullptr), _diffuseTexture(nullptr)
@@ -45,6 +47,8 @@ Material::Material(GameObject* gameObject) : Component(gameObject), checkers_ima
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	shader = dynamic_cast<ResourceShader*>(App->resources->RequestResource(App->resources->Find("Assets/Shaders/water.vert")));
 }
 
 Material::~Material()
@@ -266,4 +270,14 @@ ResourceTexture* Material::GetDiffuseTexture()
 void Material::AddShader()
 {
 	shader->CompileUseProgram();
+
+	BindTexture();
+
+	shader->SetMat4("transform_matrix", _gameObject->GetTransform()->GetGlobalTransform().Transposed().ptr());
+	shader->SetMat4("view_matrix", App->camera->GetViewMatrixM().Transposed().ptr());
+	shader->SetMat4("projection_matrix", App->camera->GetProjectionMatrixM().Transposed().ptr());
+
+	shader->SetFloat("time", Time::realClock.timeSinceStartup());
+	shader->SetFloat("speed", 0.5);
+
 }

@@ -23,3 +23,10 @@ void ResourceShader::SetMat4(const char* name, float* matrix)
 	GLenum error = glGetError();
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, matrix);
 }
+
+void ResourceShader::SetFloat(const char* name, float value)
+{
+	GLint variableLoc = glGetUniformLocation(shaderProgram, name);
+
+	glUniform1f(variableLoc, value);
+}

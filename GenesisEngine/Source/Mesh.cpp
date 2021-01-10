@@ -88,7 +88,7 @@ void GnMesh::Render()
 
 	Material* material = dynamic_cast<Material*>(_gameObject->GetComponent(ComponentType::MATERIAL));
 
-	material->shader = dynamic_cast<ResourceShader*>(App->resources->RequestResource(App->resources->Find("Assets/Shaders/default_shader.vert")));
+	//material->shader = dynamic_cast<ResourceShader*>(App->resources->RequestResource(App->resources->Find("Assets/Shaders/default_shader.vert")));
 
 	if (material != nullptr)
 	{
