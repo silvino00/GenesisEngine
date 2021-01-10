@@ -54,7 +54,7 @@ This engine was developed by a team formed by:
 </dl>
 
 <h2>Video Demo</h2>
-<iframe width="1280" height="720" src="https://www.youtube.com/embed/TgtMxueKM-c" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="640" height="360" src="https://www.youtube.com/embed/TgtMxueKM-c" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 <h2>License</h2> 	
 MIT License
