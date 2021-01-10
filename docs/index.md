@@ -21,6 +21,8 @@ So, to achive the goal of rendering the whole geometry using only shaders we sta
 
 For the water simulation we created a fragment shader and a vertex shader. 
 
+<dt><img src="https://raw.githubusercontent.com/silvino00/GenesisEngine/master/docs/gif2.gif"></dt>
+
 The fragment shader changes the color of the water to simulate foam and darker areas by using cellular noise, the usage and the properties of this noise can be checked in the tutorial below.
 
 <iframe width="590" height="332" src="https://www.youtube.com/embed/ybbJz6C9YYA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
@@ -52,9 +54,7 @@ This engine was developed by a team formed by:
 </dl>
 
 <h2>Video Demo</h2>
-<iframe width="600" height="300" 
-src="https://www.youtube.com/embed/zWaymcVmJ-A" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-</iframe>
+<iframe width="1280" height="720" src="https://www.youtube.com/embed/TgtMxueKM-c" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 <h2>License</h2> 	
 MIT License
