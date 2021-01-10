@@ -18,7 +18,7 @@ public:
 
 	void CompileUseProgram();
 	void SetMat4(const char* name, float* matrix);
-
+	void SetFloat(const char* name, float value);
 public:
 	int vertexShader;
 	int fragmentShader;
