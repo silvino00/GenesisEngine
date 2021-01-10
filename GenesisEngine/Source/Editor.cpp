@@ -424,6 +424,9 @@ bool Editor::CreateMainMenuBar() {
 			if (ImGui::MenuItem("View on GitHub"))
 				ShellExecuteA(NULL, "open", "https://github.com/marcpages2020/GenesisEngine", NULL, NULL, SW_SHOWNORMAL);
 
+			if (ImGui::MenuItem("Website"))
+				ShellExecuteA(NULL, "open", "https://silvino00.github.io/GenesisEngine/", NULL, NULL, SW_SHOWNORMAL);
+
 			if (ImGui::MenuItem("About"))
 				windows[ABOUT_WINDOW]->visible = true;
 
