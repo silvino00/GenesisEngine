@@ -5,6 +5,7 @@
   Silvino Medina Cardona Github: https://github.com/silvino00
   Original Genesis Engine Repository: https://github.com/marcpages2020/GenesisEngine
   Forked Repository: https://github.com/silvino00/GenesisEngine
+  Website Link: https://silvino00.github.io/GenesisEngine/
 
 ## Controls: 
  
@@ -27,7 +28,9 @@
 
 ## Changelog
 
- Shaders created, water simulation created.
+Shader Pipeline added:
+-> All the city geometry is loaded only with shaders.
+-> Water demo with simple moving waves and foam simulation.
 
 ### Game Objects Inspector actions
  - Transform: Translate, Rotate and Scale the object. There is a scale multiplier which lest ypu scale the Object in all the axis at the same time. 
