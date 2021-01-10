@@ -1,5 +1,6 @@
 <h3> Genesis Engine </h3>
 Genesis Engine made initially by Marc Pagès Francesch was forked by Javier D. Belda González and Silvino Medina Cardona for their third assignment in the Game Engines subject.
+
 <b>Original link:</b> Click <a href="https://github.com/marcpages2020/GenesisEngine">here</a>
 
 <h2>Description</h2>
@@ -13,15 +14,15 @@ Assimp, DevIL, Glew, ImGUI, Parson, PhysFS and SDL. after a general base in whic
 This engine was developed by a team formed by:
 <dl>
 
-<dt><img src="https://raw.githubusercontent.com/Ap011y0n/2d-Platformer/master/WebpageContents/javi.jpg" height = "140" width = "200"></img></dt>
+<dt><img src="https://raw.githubusercontent.com/silvino00/GenesisEngine/master/docs/Javi.jpg"></img></dt>
 <dt>Javier D. Belda González</dt>
-<dd> Audio, enemy behaviour, pathfinding, level 2 design, pause menu, ingame HUD(score, coins counter), coins, webpage, death condition, camera borders</dd>
+<dd> Water Simulation, webpage and shaders base</dd>
 <dd> <b>Github account:</b> Click <a href=" https://github.com/JBGelsenorJ">here</a> </dd>
 <dd> <b>Linkedin:</b>  Click <a href=" https://www.linkedin.com/in/javier-belda-gonz%C3%A1lez-59718112b/">here</a></dd>
 
-<dt><img src="https://raw.githubusercontent.com/Ap011y0n/2d-Platformer/master/WebpageContents/javi.jpg" height = "120" width = "160" ></img> </dt>
+<dt><img src="https://raw.githubusercontent.com/silvino00/GenesisEngine/master/docs/Silvino.jpeg"></img> </dt>
 <dt>Silvino Medina Cardona</dt>
-<dd> Lead Programmer, Entities (player/enemies), UI system, Console, colisions, animation loading, ranged combat system, map loading, camera culling, bugfixing  </dd>
+<dd> Shaders pipeline and shaders base </dd>
 <dd> <b>Github account:</b> Click <a href="https://github.com/silvino00">here</a> </dd>
 
 </dl>
@@ -55,5 +56,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 <h2>Download link</h2> 
-<a href="https://i1.wp.com/www.materiagris.es/wp-content/uploads/2018/10/meme.jpg?ssl=1"><h1>Here</12></a>
+<a href="https://i1.wp.com/www.materiagris.es/wp-content/uploads/2018/10/meme.jpg?ssl=1"><h1>Here</h1></a>
 
