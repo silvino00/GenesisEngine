@@ -49,7 +49,7 @@ Material::Material(GameObject* gameObject) : Component(gameObject), checkers_ima
 
 
 	shader = dynamic_cast<ResourceShader*>(App->resources->RequestResource(App->resources->Find("Assets/Shaders/default_shader.vert")));
-	shader = dynamic_cast<ResourceShader*>(App->resources->RequestResource(App->resources->Find("Assets/Shaders/water.vert")));
+	
 
 }
 

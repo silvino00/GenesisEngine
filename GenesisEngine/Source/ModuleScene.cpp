@@ -6,6 +6,7 @@
 #include "FileSystem.h"
 #include "GameObject.h"
 #include "Transform.h"
+#include "ResourceShader.h"
 
 ModuleScene::ModuleScene(bool start_enabled) : Module(start_enabled), show_grid(true), selectedGameObject(nullptr), root(nullptr) 
 {
@@ -38,6 +39,9 @@ bool ModuleScene::Start()
 	
 	GameObject* water = App->resources->RequestGameObject("Assets/EngineAssets/Primitives/plane.fbx");
 	AddGameObject(water);
+	Material* material = (Material*)water->GetChildAt(0)->GetComponent(ComponentType::MATERIAL);
+	ResourceShader* water_shader = (ResourceShader*)App->resources->RequestResource(App->resources->Find("Assets/Shaders/water.vert"));
+	material->shader = (ResourceShader*)App->resources->RequestResource(App->resources->Find("Assets/Shaders/water.vert"));
 
 	GameObject* camera = new GameObject();
 	camera->AddComponent(ComponentType::CAMERA);
