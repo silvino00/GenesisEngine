@@ -26,8 +26,6 @@ Material::Material() : Component(), checkers_image(false), _resource(nullptr), c
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-
-	shader = dynamic_cast<ResourceShader*>(App->resources->RequestResource(App->resources->Find("Assets/Shaders/default_shader.vert")));
 }
 
 Material::Material(GameObject* gameObject) : Component(gameObject), checkers_image(false), _resource(nullptr), _diffuseTexture(nullptr)
@@ -45,6 +43,8 @@ Material::Material(GameObject* gameObject) : Component(gameObject), checkers_ima
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	shader = dynamic_cast<ResourceShader*>(App->resources->RequestResource(App->resources->Find("Assets/Shaders/default_shader.vert")));
 }
 
 Material::~Material()

@@ -88,8 +88,6 @@ void GnMesh::Render()
 
 	Material* material = dynamic_cast<Material*>(_gameObject->GetComponent(ComponentType::MATERIAL));
 
-	material->shader = dynamic_cast<ResourceShader*>(App->resources->RequestResource(App->resources->Find("Assets/Shaders/default_shader.vert")));
-
 	if (material != nullptr)
 	{
 		material->AddShader();
@@ -108,15 +106,6 @@ void GnMesh::Render()
 	glDrawElements(GL_TRIANGLES, _resource->indices_amount, GL_UNSIGNED_INT, NULL);
 	glBindVertexArray(0);
 
-	/*if(draw_vertex_normals ||App->renderer3D->draw_vertex_normals)
-		DrawVertexNormals();
-
-	if (draw_face_normals || App->renderer3D->draw_face_normals)
-		DrawFaceNormals();*/
-
-		//App->renderer3D->DrawAABB(_AABB);
-
-		//clean buffers
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glUseProgram(0);
 }
@@ -190,6 +179,7 @@ void GnMesh::OnEditor()
 
 void GnMesh::DrawVertexNormals()
 {
+	/*
 	if (_resource->normals_buffer == -1)
 		return;
 
@@ -207,13 +197,14 @@ void GnMesh::DrawVertexNormals()
 			_resource->vertices[i + 1] + (_resource->normals[i + 1] * normal_lenght),
 			_resource->vertices[i + 2] + (_resource->normals[i + 2]) * normal_lenght);
 	}
-
+	*/
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glEnd();
 }
 
 void GnMesh::DrawFaceNormals()
 {
+	/*
 	if (_resource->normals_buffer == -1)
 		return;
 
@@ -242,6 +233,7 @@ void GnMesh::DrawFaceNormals()
 	glColor3f(1.0f, 1.0f, 1.0f);
 
 	glEnd();
+	*/
 }
 
 // GnGrid =========================================================================================================================

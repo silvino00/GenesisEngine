@@ -78,7 +78,7 @@
       <SDLCheck>false</SDLCheck>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>C:\Users\silvi\Desktop\GenesisEngine-ab7d5717f40c753ecbb8a39ed7b463ace6bd062e\GenesisEngine\Source\Libs</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\silvi\Documents\GitHub\GenesisEngine\GenesisEngine\Source\Libs</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>
       </AdditionalUsingDirectories>
       <StructMemberAlignment>Default</StructMemberAlignment>
@@ -89,7 +89,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
-      <AdditionalLibraryDirectories>C:\Users\silvi\Desktop\GenesisEngine-ab7d5717f40c753ecbb8a39ed7b463ace6bd062e\GenesisEngine\Source\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\silvi\Documents\GitHub\GenesisEngine\GenesisEngine\Source\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
