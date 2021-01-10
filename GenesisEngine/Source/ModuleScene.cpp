@@ -31,8 +31,8 @@ bool ModuleScene::Start()
 	//GameObject* baker_house = App->resources->RequestGameObject("Assets/Models/baker_house/BakerHouse.fbx");
 	//AddGameObject(baker_house);
 	
-	GameObject* rayman = App->resources->RequestGameObject("Assets/Models/Rayman/rayman.fbx");
-	AddGameObject(rayman);
+	/*GameObject* rayman = App->resources->RequestGameObject("Assets/Models/Rayman/rayman.fbx");
+	AddGameObject(rayman);*/
 
 	GameObject* street_environment = App->resources->RequestGameObject("Assets/Models/street/Street environment_V01.fbx");
 	AddGameObject(street_environment);
